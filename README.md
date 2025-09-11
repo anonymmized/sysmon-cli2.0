@@ -3,11 +3,11 @@
 `upmon.sh` is a lightweight uptime monitor for Linux and macOS (with Docker support).
 It checks how long the system (or container) has been running without a reboot and warns you if it exceeds a configurable threshold.
 
-✅ Works on Linux and macOS
-✅ Detects if running inside a Docker container and calculates container uptime correctly
-✅ Shows red bold warning in terminal when threshold is exceeded
-✅ Sends system notifications (Linux: notify-send, macOS: osascript)
-✅ No cron jobs, no log files, just a simple loop
+- ✅ Works on Linux and macOS
+- ✅ Detects if running inside a Docker container and calculates container uptime correctly
+- ✅ Shows red bold warning in terminal when threshold is exceeded
+- ✅ Sends system notifications (Linux: notify-send, macOS: osascript)
+- ✅ No cron jobs, no log files, just a simple loop
 
 ## ⚙️ Installation
 Clone or copy the script into your system:
