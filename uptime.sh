@@ -1,22 +1,33 @@
 #!/bin/bash
 
-number=$(w | head -n1 | awk '{print $3;}' | tr -d ',')
-duration=$(w | head -n1 | awk '{print $4;}' | tr -d ',')
+uptime_line=$(w | head -n1)
 
-arr=("secs" "min" "days")
+uptime_part=$(echo "$uptime_line" | sed -E 's/.*up (.*), [0-9]+ user.*/\1/')
 
-if [[ " ${arr[*]} " == *" $duration "* ]]; then
-    echo "Активен либо более суток, либо менее часа"
-else
-    IFS=":" read -r hours minutes <<< "$number"
-    echo "Активен $hours часов $minutes минут"
-fi
-
-
-#echo "$number:$duration"
-
-#1) up 45 secs
-#2) up 12 min
-#3) up 14:50 ✅
-#4) up 2 days, 14:50
-#5) up 120 days
+case "$uptime_part" in
+    *secs)
+        number=$(echo "$uptime_part" | awk '{print $1}')
+        echo "Активен $number секунд"
+        ;;
+    *min)
+        number=$(echo "$uptime_part" | awk '{print $1}')
+        echo "Активен $number минут"
+        ;;
+    *days,*:*)
+        days=$(echo "$uptime_part" | awk '{print $1}')
+        time=$(echo "$uptime_part" | awk '{print $3}')
+        IFS=":" read -r hours minutes <<< "$time"
+        echo "Активен $days дней $hours часов $minutes минут"
+        ;;
+    *days)
+        number=$(echo "$uptime_part" | awk '{print $1}')
+        echo "Активен $number дней"
+        ;;
+    *:*)
+        IFS=":" read -r hours minutes <<< "$uptime_part"
+        echo "Активен $hours часов $minutes минут"
+        ;;
+    *)
+        echo "Неизвестный формат: $uptime_part"
+        ;;
+esac
