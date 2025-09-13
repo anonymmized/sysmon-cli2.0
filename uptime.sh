@@ -65,7 +65,17 @@ get_uptime_seconds() {
   esac
 }
 
-get_uptime_seconds
+uptime_s=$(get_uptime_seconds)
+
+printf -v uptime_hms "%02d:%02d:%02d" \
+  $((uptime_s/3600)) $(((uptime_s%3600)/60)) $((uptime_s%60))
+echo "Uptime - $uptime_hms"
+
+days=$((uptime_s/86400))
+hours=$(((uptime_s%86400)/3600))
+mins=$(((uptime_s%3600)/60))
+echo "Uptime - ${days}d ${hours}h ${mins}m"
+
 get_os_information
 get_time_information
 get_cpu_information
