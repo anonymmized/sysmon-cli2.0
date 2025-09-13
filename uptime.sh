@@ -3,6 +3,18 @@
 
 set -euo pipefail
 
+get_user_information() {
+    cur_hostname=$(hostname)
+    cur_username=$(whoami)
+
+}
+
+get_time_information() {
+    cur_time=$(w | head -n1 | awk '{print $1}')
+    cur_zone=$(ls -l /etc/localtime | awk -F/ '{print $(NF-1) "/" $NF}')
+    echo -e "Current time - $cur_time\nCurrent zone - $cur_zone"
+}
+
 get_os_information() {
     kernel_type=$(uname -m)
     kernel_ver=$(uname -r)
@@ -40,3 +52,4 @@ get_uptime_seconds() {
 
 get_uptime_seconds
 get_os_information
+get_time_information
