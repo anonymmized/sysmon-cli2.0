@@ -3,10 +3,25 @@
 
 set -euo pipefail
 
+OS=$(uname -s)
+
 get_user_information() {
     cur_hostname=$(hostname)
     cur_username=$(whoami)
 
+}
+
+get_cpu_information() {
+    if [[ $OS == "Darwin" ]]; then
+        cpu_brand=$(sysctl -n machdep.cpu.brand_string)
+        core_count=$(sysctl -n machdep.cpu.core_count)
+        thread_count=$(sysctl -n machdep.cpu.thread_count)
+        echo -e "CPU: $cpu_brand\nCores: $core_count\nThreads: $thread_count"
+    elif [[ $OS == "Linux" ]]; then
+        cpu_model=$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2 | xargs)
+        cores=$(grep -c '^processor' /proc/cpuinfo)
+        echo -e "CPU: $cpu_model\nLogical CPUs: $cores"
+    fi 
 }
 
 get_time_information() {
@@ -53,3 +68,4 @@ get_uptime_seconds() {
 get_uptime_seconds
 get_os_information
 get_time_information
+get_cpu_information
