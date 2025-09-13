@@ -23,6 +23,31 @@ get_cpu_information() {
         echo -e "CPU: $cpu_model\nLogical CPUs: $cores"
     fi 
 }
+get_mem_information() {
+    if [[ $OS == "Darwin" ]]; then 
+        total_bytes=$(sysctl -n hw.memsize)
+        total_gb=$(( total_bytes / 1073741824 ))
+
+        pagesize=$(sysctl -n hw.pagesize)
+        free_bytes=$(vm_stat | awk -v ps="$pagesize" '
+            /Pages free/        {free=$3*ps}
+            /Pages inactive/    {inactive=$3*ps}
+            /Pages speculative/ {spec=$3*ps}
+            END {print free+inactive+spec}
+        ')
+        free_gb=$(( free_bytes / 1073741824 ))
+
+        echo "Total memory: ${total_gb} GB     Free memory: ${free_gb} GB"
+
+    elif [[ $OS == "Linux" ]]; then
+        total_kb=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+        free_kb=$(grep MemAvailable /proc/meminfo | awk '{print $2}')
+        total_gb=$(( total_kb / 1048576 ))
+        free_gb=$(( free_kb / 1048576 ))
+
+        echo "Total memory: ${total_gb} GB     Free memory: ${free_gb} GB"
+    fi
+}
 
 get_time_information() {
     cur_time=$(w | head -n1 | awk '{print $1}')
@@ -71,3 +96,4 @@ get_user_information
 get_os_information
 get_time_information
 get_cpu_information
+get_mem_information
