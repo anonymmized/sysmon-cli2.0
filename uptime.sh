@@ -1,5 +1,4 @@
 #!/bin/bash
-# upmon.sh — uptime monitor (Linux/macOS + Docker-aware)
 
 set -euo pipefail
 
@@ -9,6 +8,20 @@ get_user_information() {
     cur_hostname=$(hostname)
     cur_username=$(whoami)
     echo -e "Hostname: $cur_hostname\nUser: $cur_username"
+}
+
+get_filesystem_info() {
+    if [[ $OS == "Darwin" ]]; then
+        filesys=$(df -h / | awk 'NR==2 {print $1}')
+        size=$(df -h / | awk 'NR==2 {print $2}')
+        capacity=$(df -h / | awk 'NR==2 {print $5}')
+        echo -e "Filesystem: $filesys\nSize: $size\nCapacity:$capacity"
+    elif [[ $OS == "Linux" ]]; then
+        filesys=$(df -h --output=source / | sed 1d)
+        size=$(df -h --output=size / | sed 1d)
+        capacity=$(df -h --output=pcent / | sed 1d)
+        echo -e "Filesystem: $filesys\nSize: $size\nCapacity: $capacity"
+    fi
 }
 
 get_cpu_information() {
@@ -97,3 +110,4 @@ get_os_information
 get_time_information
 get_cpu_information
 get_mem_information
+get_filesystem_info
