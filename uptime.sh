@@ -7,7 +7,7 @@ OS=$(uname -s)
 get_user_information() {
     cur_hostname=$(hostname)
     cur_username=$(whoami)
-    echo -e "Hostname: $cur_hostname\nUser: $cur_username"
+    echo "$cur_hostname,$cur_username"
 }
 
 get_filesystem_info() {
@@ -15,12 +15,12 @@ get_filesystem_info() {
         filesys=$(df -h / | awk 'NR==2 {print $1}')
         size=$(df -h / | awk 'NR==2 {print $2}')
         capacity=$(df -h / | awk 'NR==2 {print $5}')
-        echo -e "Filesystem: $filesys\nSize: $size\nCapacity:$capacity"
+        echo "$filesys,$size,$capacity"
     elif [[ $OS == "Linux" ]]; then
         filesys=$(df -h --output=source / | sed 1d)
         size=$(df -h --output=size / | sed 1d)
         capacity=$(df -h --output=pcent / | sed 1d)
-        echo -e "Filesystem: $filesys\nSize: $size\nCapacity: $capacity"
+        echo "$filesys,$size,$capacity"
     fi
 }
 
@@ -29,11 +29,11 @@ get_cpu_information() {
         cpu_brand=$(sysctl -n machdep.cpu.brand_string)
         core_count=$(sysctl -n machdep.cpu.core_count)
         thread_count=$(sysctl -n machdep.cpu.thread_count)
-        echo -e "CPU: $cpu_brand\nCores: $core_count\nThreads: $thread_count"
+        echo "$cpu_brand,$core_count,$thread_count"
     elif [[ $OS == "Linux" ]]; then
         cpu_model=$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2 | xargs)
         cores=$(grep -c '^processor' /proc/cpuinfo)
-        echo -e "CPU: $cpu_model\nLogical CPUs: $cores"
+        echo "$cpu_model, $cores"
     fi 
 }
 get_mem_information() {
@@ -50,7 +50,7 @@ get_mem_information() {
         ')
         free_gb=$(( free_bytes / 1073741824 ))
 
-        echo "Total memory: ${total_gb} GB     Free memory: ${free_gb} GB"
+        echo "$total_gb,$free_gb"
 
     elif [[ $OS == "Linux" ]]; then
         total_kb=$(grep MemTotal /proc/meminfo | awk '{print $2}')
@@ -58,25 +58,21 @@ get_mem_information() {
         total_gb=$(( total_kb / 1048576 ))
         free_gb=$(( free_kb / 1048576 ))
 
-        echo "Total memory: ${total_gb} GB     Free memory: ${free_gb} GB"
+        echo "$total_gb,$free_gb"
     fi
 }
 
 get_time_information() {
     cur_time=$(w | head -n1 | awk '{print $1}')
     cur_zone=$(ls -l /etc/localtime | awk -F/ '{print $(NF-1) "/" $NF}')
-    echo -e "Current time: $cur_time\nCurrent zone: $cur_zone"
+    echo "$cur_time,$cur_zone"
 }
 
 get_os_information() {
     kernel_type=$(uname -m)
     kernel_ver=$(uname -r)
     os_type=$(uname -s)
-    if [[ $os_type == "Darwin" ]]; then
-        echo -e "Kernel: $kernel_type\nOS: MacOS\nKernel version: $kernel_ver"
-    elif [[ $os_type == "Linux" ]]; then
-        echo -e "Kernel: $kernel_type\nOS: Linux\nKernel version: $kernel_ver"
-    fi
+    echo "$kernel_type,$os_type,$kernel_ver"
 }
 
 get_uptime_seconds_linux_host() {
