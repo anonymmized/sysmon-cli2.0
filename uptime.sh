@@ -33,7 +33,7 @@ get_cpu_information() {
     elif [[ $OS == "Linux" ]]; then
         cpu_model=$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2 | xargs)
         cores=$(grep -c '^processor' /proc/cpuinfo)
-        echo "$cpu_model, $cores"
+        echo "$cpu_model,$cores"
     fi 
 }
 get_mem_information() {
@@ -95,15 +95,56 @@ get_uptime_seconds() {
   esac
 }
 
+# === get_uptime_seconds ===
 uptime_s=$(get_uptime_seconds)
-
 days=$((uptime_s/86400))
 hours=$(((uptime_s%86400)/3600))
 mins=$(((uptime_s%3600)/60))
+
+# === get_user_information ===
+user_info=$(get_user_information)
+IFS=',' read -r cur_hostname cur_username <<< "$user_info"
+
+# === get_os_information ===
+# $kernel_type,$os_type,$kernel_ver
+os_info=$(get_os_information)
+IFS=',' read -r kernel_type os_type kernel_ver <<< "$os_info"
+
+# === get_time_information ===
+# $cur_time,$cur_zone
+time_info=$(get_time_information)
+IFS=',' read -r cur_time cur_zone <<< "$time_info"
+
+# === get_cpu_information ===
+if [[ "$OS" == "Darwin" ]]; then
+    #$cpu_brand,$core_count,$thread_count
+    cpu_info=$(get_cpu_information)
+    IFS=',' read -r cpu_brand core_count thread_count <<< "$cpu_info"
+elif [[ "$OS" == "Linux" ]]; then
+    #$cpu_model,$cores
+    cpu_info=$(get_cpu_information)
+    IFS=',' read -r cpu_model cores <<< "$cpu_info"
+fi
+
+# === get_mem_information === 
+# $total_gb,$free_gb
+mem_info=$(get_mem_information)
+IFS=',' read -r total_gb free_gb <<< "$mem_info"
+
+# === get_filesystem_info ===
+# $filesys,$size,$capacity
+fs_info=$(get_filesystem_info)
+IFS=',' read -r filesys size capacity <<< "$fs_info"
+
+# === output ===
 echo "Uptime: ${days}d ${hours}h ${mins}m"
-get_user_information
-get_os_information
-get_time_information
-get_cpu_information
-get_mem_information
-get_filesystem_info
+echo -e "Hostname: $cur_hostname\nUsername: $cur_username"
+echo -e "Kernel type: $kernel_type\nKernel version $kernel_ver\nOS type: $os_type"
+echo -e "Time: $cur_time\nZone: $cur_zone"
+if [[ "$OS" == "Darwin" ]]; then
+    echo -e "CPU brand: $cpu_brand\nCores: $core_count\nThreads: $thread_count"
+elif [[ "$OS" == "Linux" ]]; then
+    echo -e "CPU model: $cpu_model\nCores: $cores"
+fi
+echo -e "Total (RAM): $total_gb\nFree (RAM): $free_gb"
+echo -e "Filesystem: $filesys\nSize: $size\nCapacity: $capacity"
