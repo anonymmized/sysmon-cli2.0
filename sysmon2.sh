@@ -10,6 +10,14 @@ get_user_information() {
     echo "$cur_hostname,$cur_username"
 }
 
+get_top_processes() {
+    printf "%-8s %-15s %8s %8s %s\n" "PID" "Name" "%CPU" "%MEM" "Path"
+    ps aux | sort -nr -k 3 | head -5 | awk '{
+        split($11, a, "/"); 
+        printf "%-8s %-15s %8s %8s %s\n", $2, a[length(a)], $3"%", $4"%", $11
+    }'
+}
+
 get_filesystem_info() {
     if [[ $OS == "Darwin" ]]; then
         filesys=$(df -h / | awk 'NR==2 {print $1}')
@@ -100,21 +108,17 @@ uptime_s=$(get_uptime_seconds)
 days=$((uptime_s/86400))
 hours=$(((uptime_s%86400)/3600))
 mins=$(((uptime_s%3600)/60))
-
 # === get_user_information ===
 user_info=$(get_user_information)
 IFS=',' read -r cur_hostname cur_username <<< "$user_info"
-
 # === get_os_information ===
 # $kernel_type,$os_type,$kernel_ver
 os_info=$(get_os_information)
 IFS=',' read -r kernel_type os_type kernel_ver <<< "$os_info"
-
 # === get_time_information ===
 # $cur_time,$cur_zone
 time_info=$(get_time_information)
 IFS=',' read -r cur_time cur_zone <<< "$time_info"
-
 # === get_cpu_information ===
 if [[ "$OS" == "Darwin" ]]; then
     #$cpu_brand,$core_count,$thread_count
@@ -125,17 +129,14 @@ elif [[ "$OS" == "Linux" ]]; then
     cpu_info=$(get_cpu_information)
     IFS=',' read -r cpu_model cores <<< "$cpu_info"
 fi
-
 # === get_mem_information === 
 # $total_gb,$free_gb
 mem_info=$(get_mem_information)
 IFS=',' read -r total_gb free_gb <<< "$mem_info"
-
 # === get_filesystem_info ===
 # $filesys,$size,$capacity
 fs_info=$(get_filesystem_info)
 IFS=',' read -r filesys size capacity <<< "$fs_info"
-
 # === output ===
 echo "Uptime: ${days}d ${hours}h ${mins}m"
 echo -e "Hostname: $cur_hostname\nUsername: $cur_username"
@@ -148,3 +149,4 @@ elif [[ "$OS" == "Linux" ]]; then
 fi
 echo -e "Total (RAM): $total_gb\nFree (RAM): $free_gb"
 echo -e "Filesystem: $filesys\nSize: $size\nCapacity: $capacity"
+get_top_processes
